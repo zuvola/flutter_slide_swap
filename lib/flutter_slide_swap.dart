@@ -116,12 +116,6 @@ class SlideSwapState extends State<SlideSwap>
   }
 
   @override
-  void didUpdateWidget(SlideSwap oldWidget) {
-    _order = List<int>.generate(widget.children.length, (int index) => index);
-    super.didUpdateWidget(oldWidget);
-  }
-
-  @override
   Widget build(BuildContext context) {
     _delegate.order = _order;
     return Flow(
