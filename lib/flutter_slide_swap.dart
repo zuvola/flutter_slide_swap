@@ -69,31 +69,33 @@ class SlideSwapState extends State<SlideSwap>
   get order => _order;
 
   /// Swaps the order of the children using the two indexes.
-  void swapOrder(int a, int b) {
+  Future<void> swapOrder(int a, int b) async {
     if (a == b) return;
     setState(() {
       int tmp = _order[a];
       _order[a] = _order[b];
       _order[b] = tmp;
-      _animationController.reset();
-      _animationController.forward();
     });
+    try {
+      _animationController.reset();
+      await _animationController.forward().orCancel;
+    } on TickerCanceled {}
   }
 
   /// Use two keys to swap the order of the children.
-  void swapWithKey(Key k1, Key k2) {
+  Future<void> swapWithKey(Key k1, Key k2) async {
     var idx1 = widget.children.indexWhere((item) => item.key == k1);
     var idx2 = widget.children.indexWhere((item) => item.key == k2);
     var a = _order.indexWhere((item) => item == idx1);
     var b = _order.indexWhere((item) => item == idx2);
-    this.swapOrder(a, b);
+    await this.swapOrder(a, b);
   }
 
   /// Swap the widget linked to key for index location
-  void swapOrderWithKey(Key key, int index) {
+  Future<void> swapOrderWithKey(Key key, int index) async {
     var idx = widget.children.indexWhere((item) => item.key == key);
     var a = _order.indexWhere((item) => item == idx);
-    this.swapOrder(a, index);
+    await this.swapOrder(a, index);
   }
 
   @override

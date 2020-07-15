@@ -57,10 +57,13 @@ class MyApp extends StatelessWidget {
                         ),
                         Expanded(
                           child: RaisedButton(
-                            onPressed: () {
-                              _globalKey.currentState.swapOrderWithKey(keyA, 2);
+                            onPressed: () async {
+                              await _globalKey.currentState
+                                  .swapOrderWithKey(keyA, 3);
+                              await SlideSwap.of(context).swapOrder(1, 2);
+                              await SlideSwap.of(context).swapOrder(2, 3);
                             },
-                            child: Text('A ⇒ 2nd'),
+                            child: Text('A ⇒ 3rd...'),
                           ),
                         ),
                       ],

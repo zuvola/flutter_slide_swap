@@ -1,6 +1,6 @@
 name: flutter_slide_swap
 description: Flutter widget that swaps children with each other in slide animation.
-version: 1.0.1
+version: 1.1.0
 homepage: https://github.com/zuvola/flutter_slide_swap
 
 environment:
