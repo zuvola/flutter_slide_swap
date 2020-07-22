@@ -151,8 +151,8 @@ class _SlideSwapFlowDelegate extends FlowDelegate {
   @override
   void paintChildren(FlowPaintingContext context) {
     double y = 0.0, y1 = 0.0, y2 = 0.0;
-    var pos1 = new List(context.childCount);
-    var pos2 = new List(context.childCount);
+    var pos1 = List(context.childCount);
+    var pos2 = List(context.childCount);
     for (var i = 0; i < context.childCount; i++) {
       var idx1 = _oldOrder[i];
       var idx2 = _order[i];
@@ -174,5 +174,10 @@ class _SlideSwapFlowDelegate extends FlowDelegate {
   @override
   bool shouldRepaint(_SlideSwapFlowDelegate oldDelegate) {
     return true;
+  }
+
+  @override
+  BoxConstraints getConstraintsForChild(int i, BoxConstraints constraints) {
+    return constraints.copyWith(minHeight: 0);
   }
 }

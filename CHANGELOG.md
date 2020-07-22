@@ -1,3 +1,6 @@
+## [1.1.1]
+- Fixed minimum height constraint for children.
+
 ## [1.1.0]
 - Change swap methods to async function.
 
