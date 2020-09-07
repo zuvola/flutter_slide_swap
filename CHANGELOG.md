@@ -1,3 +1,6 @@
+## [1.1.2]
+- Added `SlideSwap.order`.
+
 ## [1.1.1]
 - Fixed minimum height constraint for children.
 

@@ -38,12 +38,18 @@ class SlideSwap extends StatefulWidget {
   /// Creates a SlideSwap widget.
   ///
   /// The [children] argument must not be null.
-  const SlideSwap({Key key, this.children = const <Widget>[]})
-      : assert(children != null),
+  const SlideSwap({
+    Key key,
+    this.children = const <Widget>[],
+    this.order,
+  })  : assert(children != null),
         super(key: key);
 
   /// The widgets below this widget in the tree.
   final List<Widget> children;
+
+  /// The order of the children
+  final List<int> order;
 
   @override
   SlideSwapState createState() => SlideSwapState();
@@ -107,7 +113,11 @@ class SlideSwapState extends State<SlideSwap>
     _animation =
         CurvedAnimation(parent: _animationController, curve: Curves.easeInOut);
     _delegate = _SlideSwapFlowDelegate(slideAnimation: _animation);
-    _order = List<int>.generate(widget.children.length, (int index) => index);
+    if (widget.order == null) {
+      _order = List<int>.generate(widget.children.length, (int index) => index);
+    } else {
+      _order = widget.order;
+    }
     super.initState();
   }
 
