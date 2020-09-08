@@ -5,6 +5,53 @@ library flutter_slide_swap;
 
 import 'package:flutter/material.dart';
 
+/// Controller for [SlideSwap].
+class SlideController extends ChangeNotifier {
+  List<Widget> _children;
+  AnimationController _animationController;
+
+  /// The order of the children
+  get order => _order;
+  List<int> _order;
+
+  /// Creates an object that manages the state required by [SlideSwap].
+  /// The [length] must [SlideSwap.children]'s length.
+  SlideController({@required int length})
+      : _order = List<int>.generate(length, (int index) => index);
+
+  /// Swaps the order of the children using the two indexes.
+  Future<void> swapOrder(int a, int b) async {
+    if (_animationController == null) return;
+    if (a == b) return;
+    int tmp = _order[a];
+    _order[a] = _order[b];
+    _order[b] = tmp;
+    notifyListeners();
+    try {
+      _animationController.reset();
+      await _animationController.forward().orCancel;
+    } on TickerCanceled {}
+  }
+
+  /// Use two keys to swap the order of the children.
+  Future<void> swapWithKey(Key k1, Key k2) async {
+    if (_children == null) return;
+    var idx1 = _children.indexWhere((item) => item.key == k1);
+    var idx2 = _children.indexWhere((item) => item.key == k2);
+    var a = _order.indexWhere((item) => item == idx1);
+    var b = _order.indexWhere((item) => item == idx2);
+    await this.swapOrder(a, b);
+  }
+
+  /// Swap the widget linked to key for index location
+  Future<void> swapOrderWithKey(Key key, int index) async {
+    if (_children == null) return;
+    var idx = _children.indexWhere((item) => item.key == key);
+    var a = _order.indexWhere((item) => item == idx);
+    await this.swapOrder(a, index);
+  }
+}
+
 /// SlideSwap
 ///
 /// {@tool sample}
@@ -12,20 +59,21 @@ import 'package:flutter/material.dart';
 /// This example shows a simple [SlideSwap].
 ///
 /// ```dart
+/// var _controller = SlideController(length: 4);
 /// SlideSwap(
-///   key: _globalKey,
+///   controller: _controller,
 ///   children: <Widget>[
 ///     RaisedButton(
 ///       key: keyA,
 ///       onPressed: () {
-///         SlideSwap.of(context).swapOrder(0, 1);
+///         _controller.swapOrder(0, 1);
 ///       },
 ///       child: Text('A'),
 ///     ),
 ///     RaisedButton(
 ///       key: keyB,
 ///       onPressed: () {
-///         _globalKey.currentState.swapWithKey(keyA, keyB);
+///         _controller.swapWithKey(keyA, keyB);
 ///       },
 ///       child: Text('B'),
 ///     ),
@@ -38,70 +86,41 @@ class SlideSwap extends StatefulWidget {
   /// Creates a SlideSwap widget.
   ///
   /// The [children] argument must not be null.
-  const SlideSwap({
+  SlideSwap({
     Key key,
-    this.children = const <Widget>[],
-    this.order,
-  })  : assert(children != null),
-        super(key: key);
+    @required this.children,
+    @required this.controller,
+  }) : super(key: key);
 
   /// The widgets below this widget in the tree.
   final List<Widget> children;
 
-  /// The order of the children
-  final List<int> order;
+  /// Controller for this widget.
+  final SlideController controller;
 
   @override
   SlideSwapState createState() => SlideSwapState();
-
-  /// The [SlideSwapState] object from the closest instance of this class
-  /// that encloses the given context.
-  static SlideSwapState of(BuildContext context) {
-    return context.findAncestorStateOfType<SlideSwapState>();
-  }
 }
 
 /// State for a [SlideSwap].
 ///
 /// Can change the display order of children.
-/// Retrieve a [SlideSwapState] from the current [BuildContext] using [SlideSwapState.of].
 class SlideSwapState extends State<SlideSwap>
     with SingleTickerProviderStateMixin {
-  List<int> _order;
   _SlideSwapFlowDelegate _delegate;
   AnimationController _animationController;
   CurvedAnimation _animation;
+  SlideController _controller;
 
-  get order => _order;
-
-  /// Swaps the order of the children using the two indexes.
-  Future<void> swapOrder(int a, int b) async {
-    if (a == b) return;
-    setState(() {
-      int tmp = _order[a];
-      _order[a] = _order[b];
-      _order[b] = tmp;
-    });
-    try {
-      _animationController.reset();
-      await _animationController.forward().orCancel;
-    } on TickerCanceled {}
+  void _didChangeControllerValue() async {
+    setState(() {});
   }
 
-  /// Use two keys to swap the order of the children.
-  Future<void> swapWithKey(Key k1, Key k2) async {
-    var idx1 = widget.children.indexWhere((item) => item.key == k1);
-    var idx2 = widget.children.indexWhere((item) => item.key == k2);
-    var a = _order.indexWhere((item) => item == idx1);
-    var b = _order.indexWhere((item) => item == idx2);
-    await this.swapOrder(a, b);
-  }
-
-  /// Swap the widget linked to key for index location
-  Future<void> swapOrderWithKey(Key key, int index) async {
-    var idx = widget.children.indexWhere((item) => item.key == key);
-    var a = _order.indexWhere((item) => item == idx);
-    await this.swapOrder(a, index);
+  void _initController() {
+    _controller = widget.controller;
+    _controller._children = widget.children;
+    _controller._animationController = _animationController;
+    _controller.addListener(_didChangeControllerValue);
   }
 
   @override
@@ -113,23 +132,29 @@ class SlideSwapState extends State<SlideSwap>
     _animation =
         CurvedAnimation(parent: _animationController, curve: Curves.easeInOut);
     _delegate = _SlideSwapFlowDelegate(slideAnimation: _animation);
-    if (widget.order == null) {
-      _order = List<int>.generate(widget.children.length, (int index) => index);
-    } else {
-      _order = widget.order;
-    }
+    _initController();
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(SlideSwap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.controller != oldWidget.controller) {
+      oldWidget.controller.removeListener(_didChangeControllerValue);
+      _initController();
+    }
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _controller.removeListener(_didChangeControllerValue);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    _delegate.order = _order;
+    _delegate.order = _controller.order;
     return Flow(
       delegate: _delegate,
       children: widget.children,

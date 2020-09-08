@@ -26,23 +26,25 @@ See the `example` directory for a complete sample app using SlideSwap.
 Or use the SlideSwap like below.
 
 ````dart
+var _controller = SlideController(length: 4);
 SlideSwap(
-  key: _globalKey,
+  controller: _controller,
   children: <Widget>[
     RaisedButton(
       key: keyA,
       onPressed: () {
-        SlideSwap.of(context).swapOrder(0, 1);
+        _controller.swapOrder(0, 1);
       },
       child: Text('A'),
     ),
     RaisedButton(
       key: keyB,
       onPressed: () {
-        _globalKey.currentState.swapWithKey(keyA, keyB);
+        _controller.swapWithKey(keyA, keyB);
       },
       child: Text('B'),
     ),
   ],
 )
+
 ````

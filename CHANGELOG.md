@@ -1,3 +1,6 @@
+## [1.2.0]
+- **Breaking change**. Added Controller for `SlideSwap`.
+
 ## [1.1.2]
 - Added `SlideSwap.order`.
 
