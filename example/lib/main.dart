@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
               Row(
                 children: <Widget>[
                   Expanded(
-                    child: RaisedButton(
+                    child: ElevatedButton(
                       onPressed: () {
                         controller.swapOrder(1, 3);
                       },
@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    child: RaisedButton(
+                    child: ElevatedButton(
                       onPressed: () {
                         controller.swapWithKey(keyA, keyC);
                       },
@@ -52,7 +52,7 @@ class MyApp extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    child: RaisedButton(
+                    child: ElevatedButton(
                       onPressed: () async {
                         await controller.swapOrderWithKey(keyA, 3);
                         await controller.swapOrder(1, 2);

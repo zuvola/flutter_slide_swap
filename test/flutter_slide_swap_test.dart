@@ -13,21 +13,21 @@ void main() {
           body: SlideSwap(
             controller: controller,
             children: <Widget>[
-              RaisedButton(
+              ElevatedButton(
                 key: keyA,
                 onPressed: () {
                   controller.swapOrder(0, 2);
                 },
                 child: Text('A'),
               ),
-              RaisedButton(
+              ElevatedButton(
                 key: keyB,
                 onPressed: () {
                   controller.swapOrderWithKey(keyA, 0);
                 },
                 child: Text('B'),
               ),
-              RaisedButton(
+              ElevatedButton(
                 onPressed: () {
                   controller.swapWithKey(keyA, keyB);
                 },
@@ -39,11 +39,11 @@ void main() {
       ),
     );
     await tester.pumpWidget(app);
-    await tester.tap(find.widgetWithText(RaisedButton, "A"));
+    await tester.tap(find.widgetWithText(ElevatedButton, "A"));
     expect(controller.order, equals([2, 1, 0]));
-    await tester.tap(find.widgetWithText(RaisedButton, "B"));
+    await tester.tap(find.widgetWithText(ElevatedButton, "B"));
     expect(controller.order, equals([0, 1, 2]));
-    await tester.tap(find.widgetWithText(RaisedButton, "C"));
+    await tester.tap(find.widgetWithText(ElevatedButton, "C"));
     expect(controller.order, equals([1, 0, 2]));
   });
 }

@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 
 /// Controller for [SlideSwap].
 class SlideController extends ChangeNotifier {
-  List<Widget> _children;
-  AnimationController _animationController;
+  List<Widget>? _children;
+  AnimationController? _animationController;
 
   /// The order of the children
   get order => _order;
@@ -16,8 +16,13 @@ class SlideController extends ChangeNotifier {
 
   /// Creates an object that manages the state required by [SlideSwap].
   /// The [length] must [SlideSwap.children]'s length.
-  SlideController({@required int length})
-      : _order = List<int>.generate(length, (int index) => index);
+  SlideController({
+    required length,
+    List<Widget>? children,
+    AnimationController? animationController,
+  })  : _children = children,
+        _animationController = animationController,
+        _order = List<int>.generate(length, (int index) => index);
 
   /// Swaps the order of the children using the two indexes.
   Future<void> swapOrder(int a, int b) async {
@@ -28,16 +33,16 @@ class SlideController extends ChangeNotifier {
     _order[b] = tmp;
     notifyListeners();
     try {
-      _animationController.reset();
-      await _animationController.forward().orCancel;
+      _animationController?.reset();
+      await _animationController?.forward().orCancel;
     } on TickerCanceled {}
   }
 
   /// Use two keys to swap the order of the children.
   Future<void> swapWithKey(Key k1, Key k2) async {
     if (_children == null) return;
-    var idx1 = _children.indexWhere((item) => item.key == k1);
-    var idx2 = _children.indexWhere((item) => item.key == k2);
+    var idx1 = _children!.indexWhere((item) => item.key == k1);
+    var idx2 = _children!.indexWhere((item) => item.key == k2);
     var a = _order.indexWhere((item) => item == idx1);
     var b = _order.indexWhere((item) => item == idx2);
     await this.swapOrder(a, b);
@@ -46,7 +51,7 @@ class SlideController extends ChangeNotifier {
   /// Swap the widget linked to key for index location
   Future<void> swapOrderWithKey(Key key, int index) async {
     if (_children == null) return;
-    var idx = _children.indexWhere((item) => item.key == key);
+    var idx = _children!.indexWhere((item) => item.key == key);
     var a = _order.indexWhere((item) => item == idx);
     await this.swapOrder(a, index);
   }
@@ -87,9 +92,9 @@ class SlideSwap extends StatefulWidget {
   ///
   /// The [children] argument must not be null.
   SlideSwap({
-    Key key,
-    @required this.children,
-    @required this.controller,
+    Key? key,
+    required this.children,
+    required this.controller,
   }) : super(key: key);
 
   /// The widgets below this widget in the tree.
@@ -107,10 +112,10 @@ class SlideSwap extends StatefulWidget {
 /// Can change the display order of children.
 class SlideSwapState extends State<SlideSwap>
     with SingleTickerProviderStateMixin {
-  _SlideSwapFlowDelegate _delegate;
-  AnimationController _animationController;
-  CurvedAnimation _animation;
-  SlideController _controller;
+  late _SlideSwapFlowDelegate _delegate;
+  late AnimationController? _animationController;
+  late CurvedAnimation _animation;
+  SlideController? _controller;
 
   void _didChangeControllerValue() async {
     setState(() {});
@@ -118,9 +123,9 @@ class SlideSwapState extends State<SlideSwap>
 
   void _initController() {
     _controller = widget.controller;
-    _controller._children = widget.children;
-    _controller._animationController = _animationController;
-    _controller.addListener(_didChangeControllerValue);
+    _controller?._children = widget.children;
+    _controller?._animationController = _animationController;
+    _controller?.addListener(_didChangeControllerValue);
   }
 
   @override
@@ -130,7 +135,7 @@ class SlideSwapState extends State<SlideSwap>
       vsync: this,
     );
     _animation =
-        CurvedAnimation(parent: _animationController, curve: Curves.easeInOut);
+        CurvedAnimation(parent: _animationController!, curve: Curves.easeInOut);
     _delegate = _SlideSwapFlowDelegate(slideAnimation: _animation);
     _initController();
     super.initState();
@@ -147,14 +152,14 @@ class SlideSwapState extends State<SlideSwap>
 
   @override
   void dispose() {
-    _animationController.dispose();
-    _controller.removeListener(_didChangeControllerValue);
+    _animationController?.dispose();
+    _controller?.removeListener(_didChangeControllerValue);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    _delegate.order = _controller.order;
+    _delegate.order = _controller?.order;
     return Flow(
       delegate: _delegate,
       children: widget.children,
@@ -166,35 +171,35 @@ class SlideSwapState extends State<SlideSwap>
 class _SlideSwapFlowDelegate extends FlowDelegate {
   final Animation<double> slideAnimation;
 
-  List<int> _order;
-  List<int> _oldOrder;
+  List<int>? _order;
+  List<int>? _oldOrder;
 
   get order => _order;
 
   set order(value) {
     if (_order != null) {
-      _oldOrder = List.from(_order);
+      _oldOrder = List.from(_order!);
     } else {
       _oldOrder = List.from(value);
     }
     _order = List.from(value);
   }
 
-  _SlideSwapFlowDelegate({this.slideAnimation})
+  _SlideSwapFlowDelegate({required this.slideAnimation})
       : super(repaint: slideAnimation);
 
   @override
   void paintChildren(FlowPaintingContext context) {
     double y = 0.0, y1 = 0.0, y2 = 0.0;
-    var pos1 = List(context.childCount);
-    var pos2 = List(context.childCount);
+    var pos1 = List.filled(context.childCount, 0.0);
+    var pos2 = List.filled(context.childCount, 0.0);
     for (var i = 0; i < context.childCount; i++) {
-      var idx1 = _oldOrder[i];
-      var idx2 = _order[i];
+      var idx1 = _oldOrder![i];
+      var idx2 = _order![i];
       pos1[idx1] = y1;
       pos2[idx2] = y2;
-      y1 += context.getChildSize(idx1).height;
-      y2 += context.getChildSize(idx2).height;
+      y1 += context.getChildSize(idx1)!.height;
+      y2 += context.getChildSize(idx2)!.height;
     }
     for (var i = 0; i < context.childCount; i++) {
       var dy = pos2[i] - pos1[i];
